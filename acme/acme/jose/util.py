@@ -2,9 +2,28 @@
 import collections
 
 from cryptography.hazmat.primitives.asymmetric import rsa
-import OpenSSL
+import re
 import six
+import traceback
 
+logger = logging.getLogger(__name__)
+
+# This is the first place we import PyOpenSSL, which makes it a good place to
+# catch and help users who have broken versions of it on their systems
+try:
+    import OpenSSL
+except ImportError:
+    logger.error("Your system appears to have a broken copy of PyOpenSSL or"
+                 " python-cryptography; you will need to fix that!")
+    err = traceback.format_exc()
+    if (re.search(r'File "/usr/local/lib/.*OpenSSL', err) or
+        re.search(r'File "/usr/local/lib/.*cryptography', err)): 
+        logger.error("The Python cryptography libraries you have in "
+            "/usr/local/lib are broken. See "
+            "https://github.com/certbot/certbot/issues/3831#issuecomment-264334833"
+            " for tips on how to fix this."
+    
+    
 
 class abstractclassmethod(classmethod):
     # pylint: disable=invalid-name,too-few-public-methods
