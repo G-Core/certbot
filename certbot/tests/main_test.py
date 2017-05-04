@@ -390,7 +390,9 @@ class MainTest(test_util.TempDirTestCase):  # pylint: disable=too-many-public-me
         toy_stdout = stdout if stdout else six.StringIO()
         with mock.patch('certbot.main.sys.stdout', new=toy_stdout):
             with mock.patch('certbot.main.sys.stderr') as stderr:
-                ret = main.main(args[:])  # NOTE: parser can alter its args!
+                with mock.patch('atexit.register'):
+                    # NOTE: parser can alter its args!
+                    ret = main.main(args[:])
         return ret, toy_stdout, stderr
 
     def test_no_flags(self):
@@ -404,7 +406,8 @@ class MainTest(test_util.TempDirTestCase):  # pylint: disable=too-many-public-me
         with mock.patch('certbot.main.sys.stdout', new=toy_out):
             with mock.patch('certbot.main.sys.stderr', new=toy_err):
                 try:
-                    main.main(["--version"])
+                    with mock.patch('atexit.register'):
+                        main.main(["--version"])
                 except SystemExit:
                     pass
                 finally:
@@ -418,7 +421,9 @@ class MainTest(test_util.TempDirTestCase):  # pylint: disable=too-many-public-me
         exc = None
         try:
             with mock.patch('certbot.main.sys.stderr'):
-                main.main(self.standard_args + args[:])  # NOTE: parser can alter its args!
+                with mock.patch('atexit.register'):
+                    # NOTE: parser can alter its args!
+                    main.main(self.standard_args + args[:])
         except errors.MissingCommandlineFlag as exc_:
             exc = exc_
             self.assertTrue(message in str(exc))
