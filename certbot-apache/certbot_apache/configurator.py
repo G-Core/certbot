@@ -1065,8 +1065,15 @@ class ApacheConfigurator(augeas_configurator.AugeasConfigurator):
         span_end = span_val[6]
         with open(span_filep, 'r') as fh:
             fh.seek(span_start)
-            vh_contents = fh.read(span_end-span_start)
-        return vh_contents.split("\n")
+            vh_contents = fh.read(span_end-span_start).split("\n")
+        self._remove_closing_vhost_tag(vh_contents)
+        return vh_contents
+
+    def _remove_closing_vhost_tag(self, vh_contents):
+        index = next(i for i, line in enumerate(reversed(vh_contents)) if line)
+        index = len(vh_contents) - index - 1
+        if vh_contents[index].lstrip().lower().startswith("</virtualhost"):
+            del vh_contents[index]
 
     def _update_ssl_vhosts_addrs(self, vh_path):
         ssl_addrs = set()
